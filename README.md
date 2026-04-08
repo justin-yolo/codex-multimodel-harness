@@ -47,18 +47,27 @@ Codex 데스크톱의 숨겨진 시스템 프롬프트나 내부 런타임을 �
 이 하네스는 현재 저장소 안에서 바로 시험할 수도 있고, 다른 프로젝트 루트에
 정책 파일과 스크립트만 옮겨서 재사용할 수도 있습니다.
 
-가장 간단한 방법은 설치 스크립트를 사용하는 것입니다.
+가장 간단한 방법은 저장소를 클론한 뒤 설치 스크립트를 실행하는 것입니다.
+
+```powershell
+git clone https://github.com/justin-yolo/codex-multimodel-harness.git
+cd codex-multimodel-harness
+python .\scripts\install_harness.py --target C:\path\to\your-project
+```
+
+설치 전에 복사 예정 파일만 먼저 확인하고 싶다면:
 
 ```powershell
 python .\scripts\install_harness.py --target C:\path\to\your-project --dry-run
-python .\scripts\install_harness.py --target C:\path\to\your-project
 ```
 
 macOS/Linux에서는:
 
 ```bash
-python3 ./scripts/install_harness.py --target /path/to/your-project --dry-run
+git clone https://github.com/justin-yolo/codex-multimodel-harness.git
+cd codex-multimodel-harness
 python3 ./scripts/install_harness.py --target /path/to/your-project
+python3 ./scripts/install_harness.py --target /path/to/your-project --dry-run
 ```
 
 이미 대상 프로젝트에 같은 파일이 있다면 `--force`를 붙여 덮어쓸 수 있습니다.
