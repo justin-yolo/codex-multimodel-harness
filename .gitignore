@@ -1,0 +1,7 @@
+task_plan.md
+findings.md
+progress.md
+review-output/
+*.log
+__pycache__/
+*.pyc
