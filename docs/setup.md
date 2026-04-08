@@ -15,21 +15,21 @@
 
 ## 다른 프로젝트에 설치
 
-현재 저장소의 `harness/`를 그대로 들고 가지 않고도, 설치 스크립트로 최소 번들을
+현재 저장소 전체를 그대로 들고 가지 않고도, 설치 스크립트로 최소 번들을
 다른 프로젝트 루트에 복사할 수 있습니다.
 
 저장소 루트에서 실행한다면:
 
 ```powershell
-python .\harness\scripts\install_harness.py --target C:\path\to\your-project --dry-run
-python .\harness\scripts\install_harness.py --target C:\path\to\your-project
+python .\scripts\install_harness.py --target C:\path\to\your-project --dry-run
+python .\scripts\install_harness.py --target C:\path\to\your-project
 ```
 
 macOS/Linux에서는:
 
 ```bash
-python3 ./harness/scripts/install_harness.py --target /path/to/your-project --dry-run
-python3 ./harness/scripts/install_harness.py --target /path/to/your-project
+python3 ./scripts/install_harness.py --target /path/to/your-project --dry-run
+python3 ./scripts/install_harness.py --target /path/to/your-project
 ```
 
 기존 파일이 있을 때 덮어쓰려면 `--force`를 붙입니다.
@@ -40,7 +40,7 @@ python3 ./harness/scripts/install_harness.py --target /path/to/your-project
 다음 명령을 실행합니다.
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\harness\scripts\check_multimodel_env.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\check_multimodel_env.ps1
 ```
 
 기대 결과:
@@ -52,13 +52,13 @@ powershell -ExecutionPolicy Bypass -File .\harness\scripts\check_multimodel_env.
 그 다음 실제 호출까지 보는 스모크 테스트를 실행합니다.
 
 ```powershell
- powershell -ExecutionPolicy Bypass -File .\harness\scripts\smoke_test_reviews.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke_test_reviews.ps1
 ```
 
 macOS/Linux에서는:
 
 ```bash
-sh ./harness/scripts/smoke_test_reviews.sh
+sh ./scripts/smoke_test_reviews.sh
 ```
 
 ## Gemini 경고 메모

@@ -50,57 +50,56 @@ Codex 데스크톱의 숨겨진 시스템 프롬프트나 내부 런타임을 �
 가장 간단한 방법은 설치 스크립트를 사용하는 것입니다.
 
 ```powershell
-python .\harness\scripts\install_harness.py --target C:\path\to\your-project --dry-run
-python .\harness\scripts\install_harness.py --target C:\path\to\your-project
+python .\scripts\install_harness.py --target C:\path\to\your-project --dry-run
+python .\scripts\install_harness.py --target C:\path\to\your-project
 ```
 
 macOS/Linux에서는:
 
 ```bash
-python3 ./harness/scripts/install_harness.py --target /path/to/your-project --dry-run
-python3 ./harness/scripts/install_harness.py --target /path/to/your-project
+python3 ./scripts/install_harness.py --target /path/to/your-project --dry-run
+python3 ./scripts/install_harness.py --target /path/to/your-project
 ```
 
 이미 대상 프로젝트에 같은 파일이 있다면 `--force`를 붙여 덮어쓸 수 있습니다.
 
 설치 스크립트는 `bundle/` 아래의 최소 파일만 대상 프로젝트 루트로 복사합니다.
-직접 복사하고 싶다면 `harness/bundle/` 내용을 프로젝트 루트에 수동으로 옮겨도 됩니다.
+직접 복사하고 싶다면 `bundle/` 내용을 프로젝트 루트에 수동으로 옮겨도 됩니다.
 
 ## 이 저장소에서 바로 테스트
 
-아래 명령은 저장소 루트 기준으로 적었습니다. `harness/` 디렉터리 안으로 들어가서
-실행한다면 앞의 `harness/` 경로 접두사만 빼면 됩니다.
+아래 명령은 이 저장소 루트 기준입니다.
 
 1. `claude`와 `gemini`가 `PATH`에 있어야 합니다.
 2. 환경 점검:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\harness\scripts\check_multimodel_env.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\check_multimodel_env.ps1
 ```
 
 macOS/Linux에서는:
 
 ```bash
-sh ./harness/scripts/check_multimodel_env.sh
+sh ./scripts/check_multimodel_env.sh
 ```
 
 3. 이 레포를 Codex로 엽니다.
 4. 터미널에서 이중 리뷰를 돌리고 싶다면:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\harness\scripts\run_dual_review.ps1 -PromptFile .\harness\prompts\review_request_template.md
+powershell -ExecutionPolicy Bypass -File .\scripts\run_dual_review.ps1 -PromptFile .\prompts\review_request_template.md
 ```
 
 macOS/Linux에서는:
 
 ```bash
-sh ./harness/scripts/run_dual_review.sh --prompt-file ./harness/prompts/review_request_template.md
+sh ./scripts/run_dual_review.sh --prompt-file ./prompts/review_request_template.md
 ```
 
 5. 실제 모델 호출까지 보는 스모크 테스트:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\harness\scripts\smoke_test_reviews.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke_test_reviews.ps1
 ```
 
 ## 휴대성 메모
