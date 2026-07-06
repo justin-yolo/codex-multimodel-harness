@@ -144,7 +144,7 @@ $env:HARNESS_GEMINI_MODEL = "your-gemini-model"
 - `docs/workflow.md`: Codex, Gemini, Claude 역할 분담과 의사결정 기준
 - `prompts/review_request_template.md`: 직접 리뷰 요청을 만들 때 쓰는 템플릿
 
-## 범위와 한계
+## 주의사항
 
 - Claude CLI나 Gemini CLI를 대신 설치하지 않습니다.
 - API 키나 로그인 상태를 제공하지 않습니다.
