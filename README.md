@@ -55,6 +55,10 @@ cd codex-multimodel-harness
 python .\scripts\install_harness.py --target C:\path\to\your-project
 ```
 
+실제 설치에서는 대상 프로젝트 디렉터리가 이미 존재해야 합니다. 아직 만들기
+전이라도 `--dry-run`은 사용할 수 있으며, 복사 예정 파일을 먼저 확인할 수
+있습니다.
+
 설치 전에 복사 예정 파일만 먼저 확인하고 싶다면:
 
 ```powershell
@@ -79,7 +83,8 @@ python3 ./scripts/install_harness.py --target /path/to/your-project --dry-run
 
 아래 명령은 이 저장소 루트 기준입니다.
 
-1. `claude`와 `gemini`가 `PATH`에 있어야 합니다.
+1. `claude`와 `gemini`가 `PATH`에 있고 각 CLI가 로컬에서 인증되어 있어야 합니다.
+   계정, 지역, CLI 버전에 따라 사용 가능한 모델 이름은 달라질 수 있습니다.
 2. 환경 점검:
 
 ```powershell
@@ -111,9 +116,13 @@ sh ./scripts/run_dual_review.sh --prompt-file ./prompts/review_request_template.
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke_test_reviews.ps1
 ```
 
+스모크 테스트는 하네스 스크립트 문제와 로컬 CLI 인증/모델 문제를 구분하는
+용도입니다. 인증 또는 모델 오류가 나오면 먼저 해당 CLI에서 단독 호출이 되는지
+확인하세요.
+
 ## 휴대성 메모
 
 - 스크립트는 머신별 절대경로 대신 `PATH`에서 `claude`와 `gemini`를 찾습니다.
-- 기본 모델은 `HARNESS_CLAUDE_MODEL`, `HARNESS_GEMINI_MODEL` 환경변수로 바꿀 수 있습니다.
+- 기본 모델이 로컬 CLI에서 제공되지 않으면 `HARNESS_CLAUDE_MODEL`, `HARNESS_GEMINI_MODEL` 환경변수로 바꿀 수 있습니다.
 - 정책 파일은 가능한 한 레포 로컬 상대경로를 기준으로 작성되어 있습니다.
 - 팀의 역할 분담을 바꾸려면 `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`를 함께 수정해 일관성을 유지하는 것이 좋습니다.

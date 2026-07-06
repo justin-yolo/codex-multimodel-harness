@@ -37,9 +37,10 @@ if ([string]::IsNullOrWhiteSpace($payload)) {
     throw "프롬프트 내용이 없습니다. -Prompt, -PromptFile 또는 stdin을 사용하세요."
 }
 
-# On Windows PowerShell, the .ps1 shim corrupts Korean arguments.
-# Prefer the real application path and pass the prompt as a normal CLI argument.
-& $gemini.Source --prompt $payload --model $Model --approval-mode plan --output-format text
+# Keep the real prompt on stdin so long or multiline prompts do not hit Windows
+# command-line length and quoting limits.
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$payload | & $gemini.Source --prompt " " --model $Model --approval-mode plan --output-format text
 
 if ($LASTEXITCODE -ne 0) {
     throw "Gemini CLI exited with code $LASTEXITCODE."

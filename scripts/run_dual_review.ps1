@@ -14,21 +14,36 @@ if ([string]::IsNullOrWhiteSpace($GeminiModel)) {
 }
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$failures = New-Object System.Collections.Generic.List[string]
+
+function Invoke-ReviewHelper {
+    param(
+        [string]$Name,
+        [scriptblock]$Command
+    )
+
+    try {
+        & $Command
+    } catch {
+        $failures.Add($Name) | Out-Null
+        [Console]::Error.WriteLine("[dual-review] $Name failed: $($_.Exception.Message)")
+    }
+}
 
 if ($PromptFile) {
     Write-Host "===== Gemini 비판적 리뷰 ====="
-    & (Join-Path $scriptRoot "run_gemini_review.ps1") -PromptFile $PromptFile -Model $GeminiModel
+    Invoke-ReviewHelper "Gemini" { & (Join-Path $scriptRoot "run_gemini_review.ps1") -PromptFile $PromptFile -Model $GeminiModel }
 
     Write-Host ""
     Write-Host "===== Claude 리드 리뷰 ====="
-    & (Join-Path $scriptRoot "run_claude_review.ps1") -PromptFile $PromptFile -Model $ClaudeModel
+    Invoke-ReviewHelper "Claude" { & (Join-Path $scriptRoot "run_claude_review.ps1") -PromptFile $PromptFile -Model $ClaudeModel }
 } elseif ($Prompt) {
     Write-Host "===== Gemini 비판적 리뷰 ====="
-    & (Join-Path $scriptRoot "run_gemini_review.ps1") -Prompt $Prompt -Model $GeminiModel
+    Invoke-ReviewHelper "Gemini" { & (Join-Path $scriptRoot "run_gemini_review.ps1") -Prompt $Prompt -Model $GeminiModel }
 
     Write-Host ""
     Write-Host "===== Claude 리드 리뷰 ====="
-    & (Join-Path $scriptRoot "run_claude_review.ps1") -Prompt $Prompt -Model $ClaudeModel
+    Invoke-ReviewHelper "Claude" { & (Join-Path $scriptRoot "run_claude_review.ps1") -Prompt $Prompt -Model $ClaudeModel }
 } else {
     $pipelineText = @($input) -join [Environment]::NewLine
     if ([string]::IsNullOrWhiteSpace($pipelineText)) {
@@ -44,9 +59,14 @@ if ($PromptFile) {
     }
 
     Write-Host "===== Gemini 비판적 리뷰 ====="
-    $payload | & (Join-Path $scriptRoot "run_gemini_review.ps1") -Model $GeminiModel
+    Invoke-ReviewHelper "Gemini" { & (Join-Path $scriptRoot "run_gemini_review.ps1") -Prompt $payload -Model $GeminiModel }
 
     Write-Host ""
     Write-Host "===== Claude 리드 리뷰 ====="
-    $payload | & (Join-Path $scriptRoot "run_claude_review.ps1") -Model $ClaudeModel
+    Invoke-ReviewHelper "Claude" { & (Join-Path $scriptRoot "run_claude_review.ps1") -Prompt $payload -Model $ClaudeModel }
+}
+
+if ($failures.Count -gt 0) {
+    [Console]::Error.WriteLine("[dual-review] Failed review(s): $($failures -join ', ')")
+    throw "Dual review failed."
 }

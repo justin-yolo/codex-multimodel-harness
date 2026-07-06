@@ -5,6 +5,49 @@ CLAUDE_MODEL="${HARNESS_CLAUDE_MODEL:-claude-opus-4-6}"
 GEMINI_MODEL="${HARNESS_GEMINI_MODEL:-gemini-3.1-pro-preview}"
 PROMPT=""
 PROMPT_FILE=""
+FAILURES=""
+
+record_failure() {
+  if [ -z "$FAILURES" ]; then
+    FAILURES="$1"
+  else
+    FAILURES="$FAILURES, $1"
+  fi
+}
+
+run_review() {
+  REVIEW_NAME="$1"
+  shift
+
+  set +e
+  "$@"
+  REVIEW_STATUS=$?
+  set -e
+
+  if [ "$REVIEW_STATUS" -ne 0 ]; then
+    echo "[dual-review] $REVIEW_NAME failed with exit code $REVIEW_STATUS" >&2
+    record_failure "$REVIEW_NAME"
+  fi
+
+  return 0
+}
+
+run_stdin_review() {
+  REVIEW_NAME="$1"
+  shift
+
+  set +e
+  printf '%s' "$PAYLOAD" | "$@"
+  REVIEW_STATUS=$?
+  set -e
+
+  if [ "$REVIEW_STATUS" -ne 0 ]; then
+    echo "[dual-review] $REVIEW_NAME failed with exit code $REVIEW_STATUS" >&2
+    record_failure "$REVIEW_NAME"
+  fi
+
+  return 0
+}
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -35,16 +78,16 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 
 if [ -n "$PROMPT_FILE" ]; then
   printf '%s\n' "===== Gemini 비판적 리뷰 ====="
-  sh "$SCRIPT_DIR/run_gemini_review.sh" --prompt-file "$PROMPT_FILE" --model "$GEMINI_MODEL"
+  run_review "Gemini" sh "$SCRIPT_DIR/run_gemini_review.sh" --prompt-file "$PROMPT_FILE" --model "$GEMINI_MODEL"
 
   printf '\n===== Claude 리드 리뷰 =====\n'
-  sh "$SCRIPT_DIR/run_claude_review.sh" --prompt-file "$PROMPT_FILE" --model "$CLAUDE_MODEL"
+  run_review "Claude" sh "$SCRIPT_DIR/run_claude_review.sh" --prompt-file "$PROMPT_FILE" --model "$CLAUDE_MODEL"
 elif [ -n "$PROMPT" ]; then
   printf '%s\n' "===== Gemini 비판적 리뷰 ====="
-  sh "$SCRIPT_DIR/run_gemini_review.sh" --prompt "$PROMPT" --model "$GEMINI_MODEL"
+  run_review "Gemini" sh "$SCRIPT_DIR/run_gemini_review.sh" --prompt "$PROMPT" --model "$GEMINI_MODEL"
 
   printf '\n===== Claude 리드 리뷰 =====\n'
-  sh "$SCRIPT_DIR/run_claude_review.sh" --prompt "$PROMPT" --model "$CLAUDE_MODEL"
+  run_review "Claude" sh "$SCRIPT_DIR/run_claude_review.sh" --prompt "$PROMPT" --model "$CLAUDE_MODEL"
 else
   PAYLOAD="$(cat)"
   if [ -z "$PAYLOAD" ]; then
@@ -53,8 +96,13 @@ else
   fi
 
   printf '%s\n' "===== Gemini 비판적 리뷰 ====="
-  printf '%s' "$PAYLOAD" | sh "$SCRIPT_DIR/run_gemini_review.sh" --model "$GEMINI_MODEL"
+  run_stdin_review "Gemini" sh "$SCRIPT_DIR/run_gemini_review.sh" --model "$GEMINI_MODEL"
 
   printf '\n===== Claude 리드 리뷰 =====\n'
-  printf '%s' "$PAYLOAD" | sh "$SCRIPT_DIR/run_claude_review.sh" --model "$CLAUDE_MODEL"
+  run_stdin_review "Claude" sh "$SCRIPT_DIR/run_claude_review.sh" --model "$CLAUDE_MODEL"
+fi
+
+if [ -n "$FAILURES" ]; then
+  echo "[dual-review] Failed review(s): $FAILURES" >&2
+  exit 1
 fi

@@ -31,6 +31,8 @@ def parse_args() -> argparse.Namespace:
 def iter_bundle_files(bundle_root: Path) -> list[tuple[Path, Path]]:
     items: list[tuple[Path, Path]] = []
     for src in sorted(bundle_root.rglob("*")):
+        if "__pycache__" in src.parts or src.suffix == ".pyc":
+            continue
         if src.is_file():
             items.append((src, src.relative_to(bundle_root)))
     return items
@@ -41,27 +43,40 @@ def main() -> int:
     repo_root = Path(args.target).expanduser().resolve()
     bundle_root = Path(__file__).resolve().parents[1] / "bundle"
 
-    if not repo_root.exists():
+    target_exists = repo_root.exists()
+    if not target_exists and not args.dry_run:
         print(f"대상 레포가 존재하지 않습니다: {repo_root}", file=sys.stderr)
         return 1
 
     file_pairs = iter_bundle_files(bundle_root)
     conflicts: list[Path] = []
-    for src, rel in file_pairs:
-        dst = repo_root / rel
-        if dst.exists() and not args.force:
-            conflicts.append(rel)
+    if target_exists:
+        for src, rel in file_pairs:
+            dst = repo_root / rel
+            if dst.exists():
+                conflicts.append(rel)
 
-    if conflicts and not args.force:
+    if conflicts and not args.force and not args.dry_run:
         print("--force 없이 기존 파일을 덮어쓸 수 없어 중단합니다:", file=sys.stderr)
         for rel in conflicts:
             print(f"  - {rel}", file=sys.stderr)
         return 2
 
+    conflict_set = set(conflicts)
+    if args.dry_run:
+        if not target_exists:
+            print(f"참고: 대상 경로가 아직 존재하지 않습니다: {repo_root}")
+            print("실제 설치 전에는 대상 프로젝트 디렉터리를 먼저 만들어야 합니다.")
+        if conflicts and not args.force:
+            print("충돌 예정: 다음 기존 파일은 실제 설치 때 --force가 필요합니다:")
+            for rel in conflicts:
+                print(f"  - {rel}")
+
     for src, rel in file_pairs:
         dst = repo_root / rel
         if args.dry_run:
-            print(f"설치 예정: {rel}")
+            suffix = " (--force 필요)" if rel in conflict_set and not args.force else ""
+            print(f"설치 예정: {rel}{suffix}")
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)

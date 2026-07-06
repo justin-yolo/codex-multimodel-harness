@@ -2,6 +2,7 @@ task_plan.md
 findings.md
 progress.md
 review-output/
+.cmc-harness/reviews/
 *.log
 __pycache__/
 *.pyc
